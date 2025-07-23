@@ -1,0 +1,27 @@
+{
+  "name": "bitlight-wallet-sdk",
+  "version": "0.1.0",
+  "description": "Optimized SDK to interact with Bitlight Wallet browser extension",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "keywords": [
+    "bitlight",
+    "wallet",
+    "bitcoin",
+    "sdk",
+    "rgb"
+  ],
+  "author": "bitlightlabs",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^3.29.5",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^5.0.0"
+  }
+}
