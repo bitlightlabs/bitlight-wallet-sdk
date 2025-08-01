@@ -1,28 +1,43 @@
 declare global {
   interface Window {
-    bitlight?: any;
+    bitlight?: BitlightInjected;
   }
 }
+
 type NetworkType = 'bitcoin' | 'testnet' | 'regtest';
 
-interface SendBitcoinOptions {
-  feeRate?: number;
+interface ConnectResult {
+  address: string;
+}
+
+interface SignResult {
+  pubkey: string;
+  sign: string;
 }
 
 interface BitlightAccount {
   address: string;
-  btcAddress: string;
-  rgbAddress: string;
+  btc_pub: string;
+  rgb_pub: string;
 }
 
-interface WalletEventMap {
-  accountsChanged: (accounts: BitlightAccount[]) => void;
-  networkChanged: (network: string) => void;
+interface BitlightAddress {
+  address: string;
+}
+
+interface BitlightInjected {
+  connect: () => Promise<ConnectResult>;
+  disconnect: () => Promise<boolean>;
+  getAccounts: () => Promise<BitlightAccount>;
+  getAddress: () => Promise<BitlightAddress>;
+  getNetwork: () => Promise<{ network: NetworkType }>;
+  switchNetwork: (network: NetworkType) => Promise<{ network: NetworkType }>;
+  signMessage: (message: string) => Promise<SignResult>;
+  getVersion: () => Promise<{ version: string }>;
 }
 
 class BitlightWalletSDK {
-  private wallet: any;
-  private eventListeners: Partial<{ [K in keyof WalletEventMap]: WalletEventMap[K][] }> = {};
+  private wallet?: BitlightInjected;
 
   constructor() {
     if (typeof window === 'undefined') {
@@ -46,76 +61,51 @@ class BitlightWalletSDK {
     return !!this.wallet;
   }
 
-  on<K extends keyof WalletEventMap>(event: K, handler: WalletEventMap[K]) {
-    this.eventListeners[event] = this.eventListeners[event] || [];
-    this.eventListeners[event]!.push(handler);
-
-    if (this.wallet?.on) {
-      this.wallet.on(event, handler);
-    }
-  }
-
-  async connect(): Promise<boolean> {
+  async connect(): Promise<ConnectResult> {
     this.ensureWallet();
-    return await this.wallet.connect();
-  }
-
-
-  isConnected(): boolean {
-    return !!this.wallet && typeof this.wallet.getAccounts === 'function';
+    return await this.wallet!.connect();
   }
 
   async disconnect(): Promise<boolean> {
     this.ensureWallet();
-    return await this.wallet.disconnect();
+    return await this.wallet!.disconnect();
   }
 
-  async getAccounts(): Promise<BitlightAccount[]> {
+  async getAccounts(): Promise<BitlightAccount> {
     this.ensureWallet();
-    return await this.wallet.getAccounts();
+    return await this.wallet!.getAccounts();
   }
 
-  async getAddress(): Promise<string> {
+  async getAddress(): Promise<BitlightAddress> {
     this.ensureWallet();
-    return await this.wallet.getAddress();
+    return await this.wallet!.getAddress();
   }
 
-  async getNetwork(): Promise<string> {
+  async getNetwork(): Promise<NetworkType> {
     this.ensureWallet();
-    return await this.wallet.getNetwork();
+    const result = await this.wallet!.getNetwork();
+    return result.network;
   }
 
-  async getBalance(): Promise<any> {
+  async switchNetwork(network: NetworkType): Promise<NetworkType> {
     this.ensureWallet();
-    return await this.wallet.getBalance();
+    const result = await this.wallet!.switchNetwork(network);
+    return result.network;
   }
 
-  async switchNetwork(network: NetworkType): Promise<any> {
+  async signMessage(message: string): Promise<SignResult> {
     this.ensureWallet();
-    return await this.wallet.switchNetwork(network);
-  }
-
-  async signMessage(message: string): Promise<any> {
-    this.ensureWallet();
-    return await this.wallet.signMessage(message);
-  }
-
-  async sendBitcoin(toAddress: string, satoshis: number, options?: SendBitcoinOptions): Promise<any> {
-    this.ensureWallet();
-    return await this.wallet.sendBitcoin(toAddress, satoshis, options || {});
-  }
-
-  async getPublicKey(): Promise<string> {
-    this.ensureWallet();
-    if (typeof this.wallet.getPublicKey === 'function') {
-      return await this.wallet.getPublicKey();
-    }
-    throw new Error('getPublicKey() is not supported by current Bitlight version.');
+    return await this.wallet!.signMessage(message);
   }
 
   async getVersion(): Promise<string> {
     this.ensureWallet();
-    return await this.wallet.getVersion();
+    const result = await this.wallet!.getVersion();
+    return result.version;
+  }
+
+  isConnected(): boolean {
+    return !!this.wallet && typeof this.wallet.getAddress === 'function';
   }
 
   private ensureWallet() {
