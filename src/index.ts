@@ -4,28 +4,28 @@ declare global {
   }
 }
 
-type NetworkType = 'bitcoin' | 'testnet' | 'regtest';
+export type NetworkType = 'bitcoin' | 'testnet' | 'regtest';
 
-interface ConnectResult {
+export interface ConnectResult {
   address: string;
 }
 
-interface SignResult {
+export interface SignResult {
   pubkey: string;
   sign: string;
 }
 
-interface BitlightAccount {
+export interface BitlightAccount {
   address: string;
   btc_pub: string;
   rgb_pub: string;
 }
 
-interface BitlightAddress {
+export interface BitlightAddress {
   address: string;
 }
 
-interface BitlightInjected {
+export interface BitlightInjected {
   connect: () => Promise<ConnectResult>;
   disconnect: () => Promise<boolean>;
   getAccounts: () => Promise<BitlightAccount>;
@@ -38,22 +38,45 @@ interface BitlightInjected {
 
 class BitlightWalletSDK {
   private wallet?: BitlightInjected;
+  private injectedCheck?: Promise<void>;
 
   constructor() {
     if (typeof window === 'undefined') {
       throw new Error('Bitlight SDK must be run in a browser environment.');
     }
 
-    if (!window.bitlight) {
-      console.warn('[Bitlight SDK] bitlight wallet not yet injected. Waiting...');
-      const check = setInterval(() => {
+    if (window.bitlight) {
+      this.wallet = window.bitlight;
+    } else {
+      this.injectedCheck = this.waitForInjection();
+    }
+  }
+
+  private waitForInjection(timeout = 5000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const interval = setInterval(() => {
         if (window.bitlight) {
           this.wallet = window.bitlight;
-          clearInterval(check);
+          clearInterval(interval);
+          resolve();
+        } else if (Date.now() - start > timeout) {
+          clearInterval(interval);
+          reject(new Error('Bitlight wallet injection timeout.'));
         }
       }, 100);
+    });
+  }
+
+  private async waitForWalletReady(): Promise<void> {
+    if (this.wallet) return;
+    if (this.injectedCheck) {
+      await this.injectedCheck;
     } else {
-      this.wallet = window.bitlight;
+      await this.waitForInjection();
+    }
+    if (!this.wallet) {
+      throw new Error('Bitlight wallet not injected.');
     }
   }
 
@@ -61,57 +84,56 @@ class BitlightWalletSDK {
     return !!this.wallet;
   }
 
+  async isConnected(): Promise<boolean> {
+    try {
+      await this.getAddress();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async connect(): Promise<ConnectResult> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     return await this.wallet!.connect();
   }
 
   async disconnect(): Promise<boolean> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     return await this.wallet!.disconnect();
   }
 
   async getAccounts(): Promise<BitlightAccount> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     return await this.wallet!.getAccounts();
   }
 
   async getAddress(): Promise<BitlightAddress> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     return await this.wallet!.getAddress();
   }
 
   async getNetwork(): Promise<NetworkType> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     const result = await this.wallet!.getNetwork();
     return result.network;
   }
 
   async switchNetwork(network: NetworkType): Promise<NetworkType> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     const result = await this.wallet!.switchNetwork(network);
     return result.network;
   }
 
   async signMessage(message: string): Promise<SignResult> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     return await this.wallet!.signMessage(message);
   }
 
   async getVersion(): Promise<string> {
-    this.ensureWallet();
+    await this.waitForWalletReady();
     const result = await this.wallet!.getVersion();
     return result.version;
-  }
-
-  isConnected(): boolean {
-    return !!this.wallet && typeof this.wallet.getAddress === 'function';
-  }
-
-  private ensureWallet() {
-    if (!this.wallet) {
-      throw new Error('Bitlight wallet is not connected or not injected.');
-    }
   }
 }
 

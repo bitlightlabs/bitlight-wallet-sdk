@@ -26,23 +26,21 @@ npm install bitlight-wallet-sdk
 ## Usage
 
 ```ts
-import BitlightWalletSDK from 'bitlight-wallet-sdk';
+const bitlightSDK = new BitlightWalletSDK();
 
-const sdk = new BitlightWalletSDK();
+async function connect() {
+  if (bitlightSDK.isReady()) {
+    const connected = await bitlightSDK.isConnected();
+    if (!connected) {
+      await bitlightSDK.connect();
+    }
 
-async function init() {
-  const isReady = sdk.isReady();
-
-  if (!isReady) {
-    console.log('Bitlight wallet not injected yet.');
-    return;
+    const address = await bitlightSDK.getAddress();
+    console.log('Connected address:', address);
+  } else {
+    console.warn('Bitlight not ready');
   }
-  await sdk.connect();
-  const accounts = await sdk.getAccounts();
-  console.log('Accounts:', accounts);
 }
-
-init();
 ```
 
 ## API Reference
