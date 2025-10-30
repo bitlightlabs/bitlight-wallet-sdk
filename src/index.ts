@@ -25,6 +25,77 @@ export interface BitlightAddress {
   address: string;
 }
 
+export interface PayjoinBuyPost {
+  assets_name: string;
+  ticker: string;
+  precision: number;
+  contract_id: string;
+  receive_rgb_amount: string;
+  sell_btc_address: string;
+  sell_amount_sat: string;
+  utxo: string;
+  state?: string;
+}
+
+export interface PayjoinBuyResult {
+  invoice: string;
+  psbt: string;
+  txid: string;
+  error?: string;
+  state?: string;
+}
+
+export interface PayjoinPost {
+  invoice: string;
+  sell_amount_sat: string;
+  psbt: string;
+  payment_id?: string;
+  state?: string;
+}
+
+export interface PayjoinSignResult {
+  psbt: string;
+  txid: string;
+  error?: string;
+  state?: string;
+}
+export interface PayjoinBuyConfirmResult {
+  psbt: string;
+  error?: string;
+  state?: string;
+}
+
+export interface PayjoinSellResult {
+  psbt: string;
+  payment_id: string;
+  error?: string;
+  state?: string;
+}
+
+export interface PayjoinSellConfirmResult {
+  paid: boolean;
+  txid: string;
+  error?: string;
+  state?: string;
+}
+
+export interface PublicIssuePost {
+  ticker: string;
+  name: string;
+  supply: number;
+  precision: number;
+  seal: string;
+}
+
+export interface GetContractBalanceResult {
+  confirmed: string;
+  unconfirmed: string;
+}
+
+export interface PublicIssueResult {
+  id: string;
+}
+
 export interface BitlightInjected {
   connect: () => Promise<ConnectResult>;
   disconnect: () => Promise<boolean>;
@@ -34,9 +105,17 @@ export interface BitlightInjected {
   switchNetwork: (network: NetworkType) => Promise<{ network: NetworkType }>;
   signMessage: (message: string) => Promise<SignResult>;
   getVersion: () => Promise<{ version: string }>;
+  getRgbUtxos: () => Promise<any[]>;
+  payjoinBuy: (post: PayjoinBuyPost) => Promise<PayjoinBuyResult>;
+  payjoinBuySign: (post: PayjoinPost) => Promise<PayjoinBuyConfirmResult>;
+  payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
+  payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
+  getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
+  publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
 }
 
 class BitlightWalletSDK {
+
   private wallet?: BitlightInjected;
   private injectedCheck?: Promise<void>;
 
@@ -135,6 +214,68 @@ class BitlightWalletSDK {
     const result = await this.wallet!.getVersion();
     return result.version;
   }
+
+  async getContractUtxo(contractId: string): Promise<string> {
+    await this.waitForWalletReady();
+    const utxoData: any = await this.wallet!.getRgbUtxos();
+    const utxos = utxoData.utxos || [];
+    for (let i = 0; i < utxos.length; i++) {
+      const tokens = utxos[i].tokenList || [];
+      for (let j = 0; j < tokens.length; j++) {
+        if (tokens[j].address === contractId) {
+          return utxos[i].outpoint;
+        }
+      }
+    }
+    const defaultUtxo =
+      utxoData.available && utxoData.available.length > 0
+        ? utxoData.available[0]?.outpoint
+        : null;
+    return defaultUtxo;
+  }
+
+  async payjoinBuy(post: PayjoinBuyPost): Promise<PayjoinBuyResult> {
+    await this.waitForWalletReady();
+    const result = await this.wallet!.payjoinBuy(post);
+    return result;
+  }
+
+  async payjoinBuyConfirm(post: PayjoinPost): Promise<PayjoinBuyConfirmResult> {
+    await this.waitForWalletReady();
+    const result = await this.wallet!.payjoinBuySign(post);
+    return result;
+  }
+
+  async payjoinSell(post: PayjoinPost): Promise<PayjoinSellResult> {
+    await this.waitForWalletReady();
+    const result = await this.wallet!.payjoinSell(post);
+    return result;
+  }
+
+  async payjoinSellConfirm(post: PayjoinPost): Promise<PayjoinSellConfirmResult> {
+    await this.waitForWalletReady();
+    const result = await this.wallet!.payjoinSellSign(post);
+    return result;
+  }
+
+  async getContractBalance(contract_id: string): Promise<GetContractBalanceResult> {
+    await this.waitForWalletReady();
+    return await this.wallet!.getContractBalance(contract_id);
+
+  }
+
+  async publicIssue(post: PublicIssuePost): Promise<PublicIssueResult> {
+    await this.waitForWalletReady();
+    const { ticker, name, supply, precision, seal } = post;
+    return await this.wallet!.publicIssue({
+      ticker,
+      name,
+      supply,
+      precision,
+      seal,
+    });
+  }
+
 }
 
 export default BitlightWalletSDK;

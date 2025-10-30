@@ -56,12 +56,15 @@ async function connect() {
 
 ### 🧾 Wallet Info
 
-| Method          | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `getAccounts()` | Returns full account object with `btc_pub` and `rgb_pub`. |
-| `getAddress()`  | Returns address object: `{ address }`.                    |
-| `getNetwork()`  | Returns current network (e.g., `'bitcoin'`, `'regtest'`). |
-| `getVersion()`  | Returns wallet version string.                            |
+| Method                           | Description                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `getAccounts()`                  | Returns full account object with `btc_pub` and `rgb_pub`.                              |
+| `getAddress()`                   | Returns address object: `{ address }`.                                                 |
+| `getNetwork()`                   | Returns current network (e.g., `'bitcoin'`, `'regtest'`).                              |
+| `getVersion()`                   | Returns wallet version string.                                                         |
+| `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                             |
+| `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                |
+| `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult. |
 
 ### 🔁 Network
 
@@ -75,28 +78,123 @@ async function connect() {
 | ------------------------------ | --------------------------- |
 | `signMessage(message: string)` | Returns `{ pubkey, sign }`. |
 
+### 💸 Payjoin
+
+| Method                     | Description                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| `payjoinBuy(post)`         | Initiates a payjoin buy. `post` is a PayjoinBuyPost object. Returns PayjoinBuyResult.      |
+| `payjoinBuyConfirm(post)`  | Confirms a payjoin buy. `post` is a PayjoinPost object. Returns PayjoinBuyConfirmResult.   |
+| `payjoinSell(post)`        | Initiates a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellResult.       |
+| `payjoinSellConfirm(post)` | Confirms a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellConfirmResult. |
+
 ## Types
 
 ```ts
+// Supported network types
 type NetworkType = 'bitcoin' | 'testnet' | 'regtest';
 
+// Result of connect()
 interface ConnectResult {
-  address: string;
+  address: string; // Connected wallet address
 }
 
+// Result of signMessage()
 interface SignResult {
-  pubkey: string;
-  sign: string;
+  pubkey: string; // Public key used for signing
+  sign: string; // Signature
 }
 
+// Account information
 interface BitlightAccount {
-  address: string;
-  btc_pub: string;
-  rgb_pub: string;
+  address: string; // Main address
+  btc_pub: string; // Bitcoin public key
+  rgb_pub: string; // RGB public key
 }
 
+// Address information
 interface BitlightAddress {
-  address: string;
+  address: string; // Main address
+}
+
+interface PayjoinBuyPost {
+  assets_name: string; // Name of the RGB asset
+  ticker: string; // Asset ticker symbol
+  precision: number; // Number of decimals (e.g. 8 for Bitcoin-like assets)
+  contract_id: string; // RGB contract ID
+  receive_rgb_amount: string; // Amount of RGB asset to receive (as string for compatibility)
+  sell_btc_address: string; // Seller's BTC address
+  sell_amount_sat: string; // Amount of BTC to sell, in satoshis
+  utxo: string; // UTXO to use for the transaction
+  state?: string; // Optional state field
+}
+
+// Result of payjoinBuy()
+interface PayjoinBuyResult {
+  invoice: string; // Lightning invoice
+  psbt: string; // Partially signed Bitcoin transaction
+  txid: string; // Transaction ID
+  error?: string; // Error message if any
+  state?: string; // Optional state
+}
+
+// Parameters for payjoinBuyConfirm, payjoinSell, payjoinSellConfirm
+interface PayjoinPost {
+  invoice: string; // Lightning invoice
+  sell_amount_sat: string; // Amount of BTC to sell, in satoshis
+  psbt: string; // Partially signed Bitcoin transaction
+  payment_id?: string; // Optional payment ID
+  state?: string; // Optional state
+}
+
+// Result of payjoinSellSign
+interface PayjoinSignResult {
+  psbt: string; // Partially signed Bitcoin transaction
+  txid: string; // Transaction ID
+  error?: string; // Error message if any
+  state?: string; // Optional state
+}
+
+// Result of payjoinBuyConfirm
+interface PayjoinBuyConfirmResult {
+  psbt: string; // Partially signed Bitcoin transaction
+  error?: string; // Error message if any
+  state?: string; // Optional state
+}
+
+// Result of payjoinSell
+interface PayjoinSellResult {
+  psbt: string; // Partially signed Bitcoin transaction
+  payment_id: string; // Payment ID
+  error?: string; // Error message if any
+  state?: string; // Optional state
+}
+
+// Result of payjoinSellConfirm
+interface PayjoinSellConfirmResult {
+  paid: boolean; // Whether payment was successful
+  txid: string; // Transaction ID
+  error?: string; // Error message if any
+  state?: string; // Optional state
+}
+
+// Parameters for publicIssue
+interface PublicIssuePost {
+  ticker: string; // Asset ticker symbol
+  name: string; // Asset name
+  supply: number; // Total supply
+  precision: number; // Number of decimals
+  seal: string; // Seal descriptor
+}
+
+// Result of getContractBalance
+interface GetContractBalanceResult {
+  confirmed: string; // Confirmed balance
+  unconfirmed: string; // Unconfirmed balance
+}
+
+// Result of publicIssue
+interface PublicIssueResult {
+  id: string; // Issued contract ID
 }
 ```
 
