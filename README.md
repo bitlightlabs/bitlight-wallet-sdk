@@ -217,27 +217,29 @@ interface SendBitcoinPost {
 interface SendBitcoinResult {
   txid: string; // Transaction ID
 }
-```
 
 // BitlightInjected interface (window.bitlight)
 interface BitlightInjected {
-connect: () => Promise<ConnectResult>;
-disconnect: () => Promise<boolean>;
-getAccounts: () => Promise<BitlightAccount>;
-getAddress: () => Promise<BitlightAddress>;
-getNetwork: () => Promise<{ network: NetworkType }>;
-switchNetwork: (network: NetworkType) => Promise<{ network: NetworkType }>;
-signMessage: (message: string) => Promise<SignResult>;
-getVersion: () => Promise<{ version: string }>;
-getRgbUtxos: () => Promise<any[]>;
-payjoinBuy: (post: PayjoinBuyPost) => Promise<PayjoinBuyResult>;
-payjoinBuySign: (post: PayjoinPost) => Promise<PayjoinBuyConfirmResult>;
-payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
-payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
-getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
-publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
-sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
+  connect: () => Promise<ConnectResult>;
+  disconnect: () => Promise<boolean>;
+  getAccounts: () => Promise<BitlightAccount>;
+  getAddress: () => Promise<BitlightAddress>;
+  getNetwork: () => Promise<{ network: NetworkType }>;
+  switchNetwork: (network: NetworkType) => Promise<{ network: NetworkType }>;
+  signMessage: (message: string) => Promise<SignResult>;
+  getVersion: () => Promise<{ version: string }>;
+  getRgbUtxos: () => Promise<any[]>;
+  payjoinBuy: (post: PayjoinBuyPost) => Promise<PayjoinBuyResult>;
+  payjoinBuySign: (post: PayjoinPost) => Promise<PayjoinBuyConfirmResult>;
+  payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
+  payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
+  getContractBalance: (
+    contract_id: string
+  ) => Promise<GetContractBalanceResult>;
+  publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
+  sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
 }
+```
 
 ## License
 
