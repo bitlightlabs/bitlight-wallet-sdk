@@ -15,7 +15,7 @@ A JavaScript SDK to interact with the Bitlight Wallet extension. Supports UMD an
 
 Bitlight Wallet SDK provides a simple interface for web applications to interact with the Bitlight browser wallet extension. It supports account management, network switching, message signing, and more.
 
-> **Note:** Compatible with Bitlight Wallet version 1.0.2 and above.
+> **Note:** Compatible with Bitlight Wallet version 1.2.3 and above.
 
 ## Installation
 
@@ -56,15 +56,16 @@ async function connect() {
 
 ### 🧾 Wallet Info
 
-| Method                           | Description                                                                            |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| `getAccounts()`                  | Returns full account object with `btc_pub` and `rgb_pub`.                              |
-| `getAddress()`                   | Returns address object: `{ address }`.                                                 |
-| `getNetwork()`                   | Returns current network (e.g., `'bitcoin'`, `'regtest'`).                              |
-| `getVersion()`                   | Returns wallet version string.                                                         |
-| `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                             |
-| `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                |
-| `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult. |
+| Method                           | Description                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------- |
+| `getAccounts()`                  | Returns full account object with `btc_pub` and `rgb_pub`.                                   |
+| `getAddress()`                   | Returns address object: `{ address }`.                                                      |
+| `getNetwork()`                   | Returns current network (e.g., `'bitcoin'`, `'regtest'`).                                   |
+| `getVersion()`                   | Returns wallet version string.                                                              |
+| `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                                  |
+| `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                     |
+| `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult.      |
+| `sendBitcoin(post)`              | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
 
 ### 🔁 Network
 
@@ -86,6 +87,12 @@ async function connect() {
 | `payjoinBuyConfirm(post)`  | Confirms a payjoin buy. `post` is a PayjoinPost object. Returns PayjoinBuyConfirmResult.   |
 | `payjoinSell(post)`        | Initiates a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellResult.       |
 | `payjoinSellConfirm(post)` | Confirms a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellConfirmResult. |
+
+### 🪙 Bitcoin Transfer
+
+| Method              | Description                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `sendBitcoin(post)` | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
 
 ## Types
 
@@ -182,8 +189,12 @@ interface PublicIssuePost {
   ticker: string; // Asset ticker symbol
   name: string; // Asset name
   supply: number; // Total supply
-  precision: number; // Number of decimals
-  seal: string; // Seal descriptor
+  precision: number; // Number of decimals, must be an integer between 1 and 18
+  /**
+   * seal: The txid of the transaction sending fee (e.g. 30000 sats) to fee_payee address
+   * on testnet. Example fee_payee: "tb1pn0s2pajhsw38fnpgcj79w3kr3c0r89y3xyekjt8qaudje70g4shs8keguu"
+   */
+  seal: string;
 }
 
 // Result of getContractBalance
@@ -196,7 +207,37 @@ interface GetContractBalanceResult {
 interface PublicIssueResult {
   id: string; // Issued contract ID
 }
+
+// Send Bitcoin
+interface SendBitcoinPost {
+  toAddress: string; // Recipient BTC address
+  satoshis: number; // Amount in satoshis
+}
+
+interface SendBitcoinResult {
+  txid: string; // Transaction ID
+}
 ```
+
+// BitlightInjected interface (window.bitlight)
+interface BitlightInjected {
+connect: () => Promise<ConnectResult>;
+disconnect: () => Promise<boolean>;
+getAccounts: () => Promise<BitlightAccount>;
+getAddress: () => Promise<BitlightAddress>;
+getNetwork: () => Promise<{ network: NetworkType }>;
+switchNetwork: (network: NetworkType) => Promise<{ network: NetworkType }>;
+signMessage: (message: string) => Promise<SignResult>;
+getVersion: () => Promise<{ version: string }>;
+getRgbUtxos: () => Promise<any[]>;
+payjoinBuy: (post: PayjoinBuyPost) => Promise<PayjoinBuyResult>;
+payjoinBuySign: (post: PayjoinPost) => Promise<PayjoinBuyConfirmResult>;
+payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
+payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
+getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
+publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
+sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
+}
 
 ## License
 
