@@ -321,7 +321,6 @@ class BitlightWalletSDK {
 
 
   isBitcoinAddress(address: string): boolean {
-    console.log('address', address);
     return validate(address);
   }
   isRGBInvoice(invoice: string): boolean {
