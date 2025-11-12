@@ -1,3 +1,5 @@
+import validate from 'bitcoin-address-validation';
+
 declare global {
   interface Window {
     bitlight?: BitlightInjected;
@@ -297,13 +299,33 @@ class BitlightWalletSDK {
   }
 
   async sendBitcoin(post: SendBitcoinPost): Promise<SendBitcoinResult> {
+    const { toAddress, satoshis } = post;
+    if (!this.isBitcoinAddress(toAddress)) {
+      throw new Error('Invalid Bitcoin address format.');
+    }
+    if (satoshis <= 1000) {
+      throw new Error('Satoshis must be greater than 1000.');
+    }
     await this.waitForWalletReady();
     return await this.wallet!.sendBitcoin(post);
   }
 
   async sendRGB(post: SendRGBPost): Promise<SendRGBResult> {
+    const { invoice } = post;
+    if (!this.isRGBInvoice(invoice)) {
+      throw new Error('Invalid RGB invoice format.');
+    }
     await this.waitForWalletReady();
     return await this.wallet!.sendRGB(post);
+  }
+
+
+  isBitcoinAddress(address: string): boolean {
+    console.log('address', address);
+    return validate(address);
+  }
+  isRGBInvoice(invoice: string): boolean {
+    return /contract:[\s\S]*/.test(invoice);
   }
 
 }
