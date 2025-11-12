@@ -105,6 +105,15 @@ export interface SendBitcoinResult {
   txid: string;
 }
 
+export interface SendRGBPost {
+  invoice: string;
+}
+
+export interface SendRGBResult {
+  payment_id: string;
+  txid: string;
+}
+
 export interface BitlightInjected {
   connect: () => Promise<ConnectResult>;
   disconnect: () => Promise<boolean>;
@@ -122,6 +131,7 @@ export interface BitlightInjected {
   getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
   publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
   sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
+  sendRGB: (post: SendRGBPost) => Promise<SendRGBResult>;
 }
 
 class BitlightWalletSDK {
@@ -291,6 +301,10 @@ class BitlightWalletSDK {
     return await this.wallet!.sendBitcoin(post);
   }
 
+  async sendRGB(post: SendRGBPost): Promise<SendRGBResult> {
+    await this.waitForWalletReady();
+    return await this.wallet!.sendRGB(post);
+  }
 
 }
 

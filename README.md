@@ -66,6 +66,7 @@ async function connect() {
 | `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                     |
 | `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult.      |
 | `sendBitcoin(post)`              | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
+| `sendRGB(post)`                  | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
 
 ### 🔁 Network
 
@@ -88,11 +89,12 @@ async function connect() {
 | `payjoinSell(post)`        | Initiates a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellResult.       |
 | `payjoinSellConfirm(post)` | Confirms a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellConfirmResult. |
 
-### 🪙 Bitcoin Transfer
+### 🪙 Transfer
 
 | Method              | Description                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------- |
 | `sendBitcoin(post)` | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
+| `sendRGB(post)`     | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
 
 ## Types
 
@@ -218,6 +220,16 @@ interface SendBitcoinResult {
   txid: string; // Transaction ID
 }
 
+// Send RGB asset
+interface SendRGBPost {
+  invoice: string; // RGB invoice
+}
+
+interface SendRGBResult {
+  payment_id: string; // Payment ID
+  txid: string; // Transaction ID
+}
+
 // BitlightInjected interface (window.bitlight)
 interface BitlightInjected {
   connect: () => Promise<ConnectResult>;
@@ -238,6 +250,7 @@ interface BitlightInjected {
   ) => Promise<GetContractBalanceResult>;
   publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
   sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
+  sendRGB: (post: SendRGBPost) => Promise<SendRGBResult>;
 }
 ```
 
