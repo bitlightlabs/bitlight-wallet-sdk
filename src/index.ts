@@ -94,6 +94,10 @@ export interface GetContractBalanceResult {
   unconfirmed: string;
 }
 
+export interface ImportContractResult {
+  contract_id: string;
+}
+
 export interface PublicIssueResult {
   id: string;
 }
@@ -131,7 +135,7 @@ export interface BitlightInjected {
   payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
   payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
   getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
-  importContract: (contract_id: string) => Promise<void>;
+  importContract: (contract_id: string) => Promise<ImportContractResult>;
   publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
   sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
   sendRGB: (post: SendRGBPost) => Promise<SendRGBResult>;
@@ -289,7 +293,7 @@ class BitlightWalletSDK {
     return await this.wallet!.getContractBalance(contract_id);
   }
 
-  async importContract(contract_id: string): Promise<void> {
+  async importContract(contract_id: string): Promise<ImportContractResult> {
     if (!this.isRGB(contract_id)) {
       throw new Error('Invalid RGB contract format.');
     }

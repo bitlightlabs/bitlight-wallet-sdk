@@ -64,7 +64,7 @@ async function connect() {
 | `getVersion()`                   | Returns wallet version string.                                                              |
 | `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                                  |
 | `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                     |
-| `importContract(contractId)`     | Imports an RGB contract by contract ID. Returns void.                                       |
+| `importContract(contractId)`     | Imports an RGB contract by contract ID. Returns ImportContractResult.                       |
 | `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult.      |
 | `sendBitcoin(post)`              | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
 | `sendRGB(post)`                  | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
@@ -206,6 +206,15 @@ interface GetContractBalanceResult {
   unconfirmed: string; // Unconfirmed balance
 }
 
+interface PublicIssueResult {
+  id: string; // Issued contract ID
+}
+
+// Result of importContract
+interface ImportContractResult {
+  contract_id: string; // Imported contract ID
+}
+
 // Result of publicIssue
 interface PublicIssueResult {
   id: string; // Issued contract ID
@@ -249,7 +258,7 @@ interface BitlightInjected {
   getContractBalance: (
     contract_id: string
   ) => Promise<GetContractBalanceResult>;
-  importContract: (contract_id: string) => Promise<void>;
+  importContract: (contract_id: string) => Promise<ImportContractResult>;
   publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
   sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
   sendRGB: (post: SendRGBPost) => Promise<SendRGBResult>;
