@@ -131,6 +131,7 @@ export interface BitlightInjected {
   payjoinSell: (post: PayjoinPost) => Promise<PayjoinSellResult>;
   payjoinSellSign: (post: PayjoinPost) => Promise<PayjoinSellConfirmResult>;
   getContractBalance: (contract_id: string) => Promise<GetContractBalanceResult>;
+  importContract: (contract_id: string) => Promise<void>;
   publicIssue: (post: PublicIssuePost) => Promise<PublicIssueResult>;
   sendBitcoin: (post: SendBitcoinPost) => Promise<SendBitcoinResult>;
   sendRGB: (post: SendRGBPost) => Promise<SendRGBResult>;
@@ -281,9 +282,19 @@ class BitlightWalletSDK {
   }
 
   async getContractBalance(contract_id: string): Promise<GetContractBalanceResult> {
+    if (!this.isRGB(contract_id)) {
+      throw new Error('Invalid RGB contract format.');
+    }
     await this.waitForWalletReady();
     return await this.wallet!.getContractBalance(contract_id);
+  }
 
+  async importContract(contract_id: string): Promise<void> {
+    if (!this.isRGB(contract_id)) {
+      throw new Error('Invalid RGB contract format.');
+    }
+    await this.waitForWalletReady();
+    return await this.wallet!.importContract(contract_id);
   }
 
   async publicIssue(post: PublicIssuePost): Promise<PublicIssueResult> {
@@ -312,7 +323,7 @@ class BitlightWalletSDK {
 
   async sendRGB(post: SendRGBPost): Promise<SendRGBResult> {
     const { invoice } = post;
-    if (!this.isRGBInvoice(invoice)) {
+    if (!this.isRGB(invoice)) {
       throw new Error('Invalid RGB invoice format.');
     }
     await this.waitForWalletReady();
@@ -323,7 +334,8 @@ class BitlightWalletSDK {
   isBitcoinAddress(address: string): boolean {
     return validate(address);
   }
-  isRGBInvoice(invoice: string): boolean {
+
+  isRGB(invoice: string): boolean {
     return /contract:[\s\S]*/.test(invoice);
   }
 
