@@ -56,18 +56,28 @@ async function connect() {
 
 ### 🧾 Wallet Info
 
-| Method                           | Description                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------- |
-| `getAccounts()`                  | Returns full account object with `btc_pub` and `rgb_pub`.                                   |
-| `getAddress()`                   | Returns address object: `{ address }`.                                                      |
-| `getNetwork()`                   | Returns current network (e.g., `'bitcoin'`, `'regtest'`).                                   |
-| `getVersion()`                   | Returns wallet version string.                                                              |
-| `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                                  |
-| `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                     |
-| `importContract(contractId)`     | Imports an RGB contract by contract ID. Returns ImportContractResult.                       |
-| `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult.      |
-| `sendBitcoin(post)`              | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
-| `sendRGB(post)`                  | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
+| Method          | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `getAccounts()` | Returns full account object with `btc_pub` and `rgb_pub`. |
+| `getAddress()`  | Returns address object: `{ address }`.                    |
+| `getNetwork()`  | Returns current network (e.g., `'bitcoin'`, `'regtest'`). |
+| `getVersion()`  | Returns wallet version string.                            |
+
+### 🟪 RGB Contracts
+
+| Method                           | Description                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `getContractUtxo(contractId)`    | Returns the UTXO for a given RGB contract.                                             |
+| `getContractBalance(contractId)` | Returns the confirmed and unconfirmed balance for a given RGB contract.                |
+| `importContract(contractId)`     | Imports an RGB contract by contract ID. Returns ImportContractResult.                  |
+| `publicIssue(post)`              | Issues a new RGB asset. `post` is a PublicIssuePost object. Returns PublicIssueResult. |
+
+### 🪙 Transfer
+
+| Method              | Description                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `sendBitcoin(post)` | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
+| `sendRGB(post)`     | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
 
 ### 🔁 Network
 
@@ -89,13 +99,6 @@ async function connect() {
 | `payjoinBuyConfirm(post)`  | Confirms a payjoin buy. `post` is a PayjoinPost object. Returns PayjoinBuyConfirmResult.   |
 | `payjoinSell(post)`        | Initiates a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellResult.       |
 | `payjoinSellConfirm(post)` | Confirms a payjoin sell. `post` is a PayjoinPost object. Returns PayjoinSellConfirmResult. |
-
-### 🪙 Transfer
-
-| Method              | Description                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------- |
-| `sendBitcoin(post)` | Send BTC to a given address. `post` is a SendBitcoinPost object. Returns SendBitcoinResult. |
-| `sendRGB(post)`     | Send RGB asset. `post` is a SendRGBPost object. Returns SendRGBResult.                      |
 
 ## Types
 
@@ -204,10 +207,6 @@ interface PublicIssuePost {
 interface GetContractBalanceResult {
   confirmed: string; // Confirmed balance
   unconfirmed: string; // Unconfirmed balance
-}
-
-interface PublicIssueResult {
-  id: string; // Issued contract ID
 }
 
 // Result of importContract
